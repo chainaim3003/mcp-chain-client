@@ -1,0 +1,61 @@
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { SSEClientTransport } from "./SSETransport.js";
+import { MCPServerConfig } from "../types.js";
+
+export type TransportType = 'stdio' | 'sse' | 'http';
+
+export interface TransportConfig extends MCPServerConfig {
+  type?: TransportType;
+  url?: string;
+  endpoint?: string;
+}
+
+export class TransportFactory {
+  static create(config: TransportConfig) {
+    const transportType = config.type || TransportFactory.getDefaultType();
+    
+    switch (transportType) {
+      case 'stdio':
+        return new StdioClientTransport({
+          command: config.command,
+          args: config.args,
+          env: config.env || process.env,
+        });
+      
+      case 'sse':
+        if (!config.url) {
+          throw new Error(`SSE transport requires URL for server ${config.name}`);
+        }
+        return new SSEClientTransport({
+          url: config.url,
+          serverName: config.name,
+        });
+      
+      case 'http':
+        throw new Error('HTTP transport not yet implemented');
+      
+      default:
+        throw new Error(`Unsupported transport type: ${transportType}`);
+    }
+  }
+  
+  static getDefaultType(): TransportType {
+    if (process.env.VERCEL || process.env.VERCEL_ENV) {
+      return 'sse';
+    }
+    if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
+      return 'http';
+    }
+    return 'stdio';
+  }
+  
+  static getEnvironmentInfo() {
+    return {
+      isVercel: !!(process.env.VERCEL || process.env.VERCEL_ENV),
+      isProduction: process.env.NODE_ENV === 'production',
+      isDevelopment: process.env.NODE_ENV === 'development',
+      defaultTransport: TransportFactory.getDefaultType(),
+      vercelUrl: process.env.VERCEL_URL,
+    };
+  }
+}

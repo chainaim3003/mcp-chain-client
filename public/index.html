@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Chain Client Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .card { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .status { padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .status.connected { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .status.disconnected { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .log { background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; max-height: 300px; overflow-y: auto; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 MCP Chain Client Dashboard</h1>
+        
+        <div class="card">
+            <h2>Connection Status</h2>
+            <div id="connection-status" class="status disconnected">
+                Disconnected
+            </div>
+            <button onclick="connect()">Connect to SSE</button>
+            <button onclick="disconnect()">Disconnect</button>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h2>Test Message</h2>
+                <button onclick="sendTestMessage()">Send Test Message</button>
+                <div id="test-result"></div>
+            </div>
+            
+            <div class="card">
+                <h2>Server Info</h2>
+                <div id="server-info">Not connected</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Activity Log</h2>
+            <div id="log" class="log"></div>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+    </div>
+    
+    <script>
+        let eventSource = null;
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function connect() {
+            if (eventSource) {
+                eventSource.close();
+            }
+            
+            const url = '/api/sse/stream?server=filesystem';
+            eventSource = new EventSource(url);
+            
+            eventSource.onopen = function() {
+                document.getElementById('connection-status').className = 'status connected';
+                document.getElementById('connection-status').textContent = 'Connected to SSE';
+                log('✅ Connected to SSE stream');
+            };
+            
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                log(`📨 Received: ${JSON.stringify(data)}`);
+                
+                if (data.type === 'connected') {
+                    document.getElementById('server-info').innerHTML = `
+                        <strong>Server:</strong> ${data.server}<br>
+                        <strong>Connection ID:</strong> ${data.connectionId}<br>
+                        <strong>Connected:</strong> ${data.timestamp}
+                    `;
+                }
+            };
+            
+            eventSource.onerror = function() {
+                document.getElementById('connection-status').className = 'status disconnected';
+                document.getElementById('connection-status').textContent = 'Connection Error';
+                log('❌ SSE connection error');
+            };
+        }
+        
+        function disconnect() {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+            document.getElementById('connection-status').className = 'status disconnected';
+            document.getElementById('connection-status').textContent = 'Disconnected';
+            log('🔌 Disconnected from SSE');
+        }
+        
+        async function sendTestMessage() {
+            try {
+                const response = await fetch('/api/sse/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        server: 'filesystem',
+                        message: {
+                            jsonrpc: '2.0',
+                            id: Math.random().toString(36),
+                            method: 'tools/list',
+                            params: {}
+                        }
+                    })
+                });
+                
+                const result = await response.json();
+                document.getElementById('test-result').innerHTML = `
+                    <strong>Response:</strong><br>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+                log(`📤 Test message sent successfully`);
+            } catch (error) {
+                log(`❌ Error sending test message: ${error.message}`);
+            }
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+        
+        // Auto-connect on page load
+        connect();
+    </script>
+</body>
+</html>

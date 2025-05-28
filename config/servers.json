@@ -1,0 +1,32 @@
+{
+  "servers": [
+    {
+      "name": "filesystem",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "./data"],
+      "env": {},
+      "required": true
+    },
+    {
+      "name": "sqlite",
+      "command": "npx", 
+      "args": ["-y", "@modelcontextprotocol/server-sqlite", "--db-path", "./data/workflow.db"],
+      "env": {},
+      "required": false
+    },
+    {
+      "name": "brave-search",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "env": {},
+      "required": false,
+      "requiresApiKey": "BRAVE_API_KEY",
+      "description": "Web search capabilities"
+    }
+  ],
+  "workflows": {},
+  "monitoring": {
+    "enabled": true,
+    "logLevel": "info"
+  }
+}

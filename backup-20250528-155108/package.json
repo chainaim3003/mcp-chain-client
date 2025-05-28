@@ -1,0 +1,93 @@
+{
+  "name": "mcp-chain-client",
+  "version": "1.0.0",
+  "description": "Advanced MCP client for chaining tool calls across multiple servers",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "test:unit": "vitest run src/tests/unit",
+    "test:integration": "vitest run src/tests/integration",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write src/**/*.ts",
+    "cli": "tsx src/cli/index.ts",
+    "status": "tsx src/cli/index.ts status",
+    "keys": "tsx src/cli/index.ts keys",
+    "health-check": "bash scripts/health-check.sh",
+    "example:basic": "tsx examples/basic-chain/run.ts",
+    "example:batch": "tsx examples/batch-processing/run.ts",
+    "example:web": "tsx examples/web-scraping/run.ts",
+    "example:pipeline": "tsx examples/data-pipeline/run.ts",
+    "clean": "rm -rf dist",
+    "prestart": "npm run build",
+    "postinstall": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "commander": "^11.1.0",
+    "dotenv": "^16.3.1",
+    "winston": "^3.11.0",
+    "inquirer": "^9.2.12",
+    "chalk": "^5.3.0",
+    "ora": "^7.0.1",
+    "table": "^6.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/inquirer": "^9.0.7",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.1",
+    "tsx": "^4.6.2",
+    "typescript": "^5.3.3",
+    "vitest": "^1.0.4",
+    "@vitest/coverage-v8": "^1.0.4"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai",
+    "automation",
+    "workflow",
+    "chain",
+    "tools",
+    "integration",
+    "batch-processing",
+    "rate-limiting"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/mcp-chain-client.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/mcp-chain-client/issues"
+  },
+  "homepage": "https://github.com/yourusername/mcp-chain-client#readme",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "files": [
+    "dist/**/*",
+    "config/**/*",
+    "examples/**/*",
+    "docs/**/*",
+    "scripts/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "bin": {
+    "mcp-chain": "./dist/cli/index.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
